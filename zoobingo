@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🦁 서울대공원 빙고!</title>
+<link href="https://fonts.googleapis.com/css2?family=Jua&family=Nanum+Gothic:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f0f7ee;
+    font-family: 'Nanum Gothic', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 28px 16px 50px;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, #b8ddb0 1.5px, transparent 1.5px);
+    background-size: 28px 28px;
+    opacity: 0.3;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .wrapper {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 480px;
+  }
+
+  /* 헤더 */
+  .header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+
+  .header .badge {
+    display: inline-block;
+    background: #2d6a2d;
+    color: #fff;
+    font-family: 'Jua', sans-serif;
+    font-size: 0.72rem;
+    padding: 4px 14px;
+    border-radius: 20px;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+  }
+
+  .header h1 {
+    font-family: 'Jua', sans-serif;
+    font-size: 1.9rem;
+    color: #1a3d1a;
+    letter-spacing: -1px;
+    line-height: 1.2;
+  }
+
+  .header .emoji-row {
+    font-size: 1.6rem;
+    letter-spacing: 4px;
+    margin-top: 6px;
+    animation: sway 3s ease-in-out infinite;
+  }
+
+  @keyframes sway {
+    0%, 100% { transform: rotate(-2deg); }
+    50% { transform: rotate(2deg); }
+  }
+
+  /* 팀명 */
+  .team-box {
+    background: #1a3d1a;
+    border-radius: 16px;
+    padding: 14px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .team-box label {
+    font-family: 'Jua', sans-serif;
+    color: #a8e6a8;
+    font-size: 0.95rem;
+    white-space: nowrap;
+  }
+
+  .team-box input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid #a8e6a8;
+    color: #fff;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.05rem;
+    padding: 4px 2px;
+    outline: none;
+  }
+
+  .team-box input::placeholder { color: #4d7a4d; }
+
+  /* 빙고 카운터 */
+  .bingo-count {
+    background: linear-gradient(135deg, #4caf50, #2d8a2d);
+    border-radius: 14px;
+    padding: 12px 20px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 16px rgba(45,138,45,0.3);
+  }
+
+  .bingo-count .label {
+    font-family: 'Jua', sans-serif;
+    color: #fff;
+    font-size: 0.9rem;
+  }
+
+  .bingo-count .num {
+    font-family: 'Jua', sans-serif;
+    color: #fff;
+    font-size: 1.5rem;
+  }
+
+  .bingo-count .num span { font-size: 0.85rem; opacity: 0.8; }
+
+  /* 그리드 */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 9px;
+    margin-bottom: 14px;
+  }
+
+  .cell {
+    background: #fff;
+    border-radius: 15px;
+    border: 2.5px solid #c8e6c8;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(.34,1.56,.64,1);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    min-height: 115px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    user-select: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cell:active { transform: scale(0.96); }
+  .cell:hover {
+    transform: scale(1.03);
+    border-color: #4caf50;
+    box-shadow: 0 6px 18px rgba(76,175,80,0.2);
+  }
+
+  .cell .animal-name {
+    font-family: 'Jua', sans-serif;
+    font-size: 0.72rem;
+    color: #2d6a2d;
+    background: #e8f5e9;
+    padding: 2px 8px;
+    border-radius: 10px;
+  }
+
+  .cell .icon { font-size: 1.75rem; line-height: 1; }
+
+  .cell .mission {
+    font-size: 0.72rem;
+    font-weight: 800;
+    color: #1a3d1a;
+    line-height: 1.35;
+    word-break: keep-all;
+  }
+
+  .cell .diff {
+    font-size: 0.62rem;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 20px;
+  }
+
+  .diff.easy { background: #d4f5d4; color: #2d7a2d; }
+  .diff.med  { background: #fff0cc; color: #a06600; }
+  .diff.hard { background: #ffe0e0; color: #c0392b; }
+
+  /* 완료 */
+  .cell.done {
+    background: linear-gradient(135deg, #4caf50, #2d8a2d);
+    border-color: #2d8a2d;
+    box-shadow: 0 6px 20px rgba(45,138,45,0.35);
+    transform: scale(1.04);
+  }
+
+  .cell.done .animal-name { background: rgba(255,255,255,0.2); color: #fff; }
+  .cell.done .mission { color: #fff; }
+
+  .cell.done::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 8px;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.85);
+    font-weight: 900;
+  }
+
+  /* 빙고 라인 */
+  .cell.bingo-line {
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    border-color: #ffd700;
+    animation: glow 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes glow {
+    from { box-shadow: 0 0 0 3px #ffd700, 0 6px 20px rgba(255,215,0,0.4); }
+    to   { box-shadow: 0 0 0 5px #ffd700, 0 8px 28px rgba(255,215,0,0.7); }
+  }
+
+  .cell.bingo-line .animal-name { background: rgba(255,255,255,0.25); color: #3d2200; }
+  .cell.bingo-line .mission { color: #3d2200; }
+
+  /* 빙고 토스트 */
+  .bingo-toast {
+    position: fixed;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: #1a3d1a;
+    color: #a8e6a8;
+    font-family: 'Jua', sans-serif;
+    font-size: 2.2rem;
+    padding: 24px 40px;
+    border-radius: 24px;
+    z-index: 999;
+    pointer-events: none;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    text-align: center;
+    white-space: pre-line;
+    line-height: 1.4;
+  }
+
+  .bingo-toast.show { transform: translate(-50%, -50%) scale(1); }
+
+  /* 버튼들 */
+  .declare-btn {
+    width: 100%;
+    background: linear-gradient(135deg, #ffd700, #ff8c00);
+    color: #1a3d1a;
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Jua', sans-serif;
+    font-size: 1.05rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 16px rgba(255,140,0,0.35);
+    display: none;
+    transition: all 0.2s;
+  }
+
+  .declare-btn.visible { display: block; }
+  .declare-btn:hover { transform: translateY(-2px); }
+
+  .reset-btn {
+    width: 100%;
+    background: #1a3d1a;
+    color: #a8e6a8;
+    border: none;
+    border-radius: 14px;
+    padding: 15px;
+    font-family: 'Jua', sans-serif;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .reset-btn:hover { background: #2d6a2d; }
+
+  /* 규칙 */
+  .rules {
+    margin-top: 16px;
+    background: #fff;
+    border-radius: 16px;
+    border: 2px solid #c8e6c8;
+    padding: 16px 18px;
+  }
+
+  .rules h3 {
+    font-family: 'Jua', sans-serif;
+    font-size: 0.88rem;
+    color: #1a3d1a;
+    margin-bottom: 10px;
+  }
+
+  .rules ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .rules ul li {
+    font-size: 0.76rem;
+    color: #2d6a2d;
+    font-weight: 800;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrapper">
+  <div class="header">
+    <div class="badge">📍 서울대공원 동물원</div>
+    <h1>팀 미션 빙고!</h1>
+    <div class="emoji-row">🦁🐘🦒🐅🦔</div>
+  </div>
+
+  <div class="team-box">
+    <label>🏅 팀명</label>
+    <input type="text" id="teamName" placeholder="우리 팀 이름 입력" maxlength="12">
+  </div>
+
+  <div class="bingo-count">
+    <div class="label">완성된 빙고 줄</div>
+    <div class="num" id="bingoNum">0 <span>/ 8</span></div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <button class="declare-btn" id="declareBtn" onclick="declareBingo()">🎉 빙고 선언하기!</button>
+  <button class="reset-btn" onclick="resetAll()">🔄 초기화하기</button>
+
+  <div class="rules">
+    <h3>📋 게임 규칙</h3>
+    <ul>
+      <li><span>①</span> 미션 완료하면 사진 찍고 칸 터치!</li>
+      <li><span>②</span> 가로·세로·대각선 한 줄 = 빙고 1개</li>
+      <li><span>③</span> 빙고 가장 많은 팀이 우승 🏆</li>
+      <li><span>④</span> 동점이면 카톡방 인증 선착순으로 결정!</li>
+      <li><span>⑤</span> 사진은 팀 카톡방에 실시간 올리기 📸</li>
+    </ul>
+  </div>
+</div>
+
+<div class="bingo-toast" id="toast"></div>
+
+<script>
+const missions = [
+  {
+    icon: '🦁',
+    animal: '사자',
+    text: '사자 앞에서\n포효하는 포즈!',
+    diff: 'easy'
+  },
+  {
+    icon: '🐘',
+    animal: '코끼리',
+    text: '코끼리 앞에서\n코 흉내내기',
+    diff: 'easy'
+  },
+  {
+    icon: '🦒',
+    animal: '기린',
+    text: '기린처럼\n목 길게 빼기',
+    diff: 'easy'
+  },
+  {
+    icon: '🐅',
+    animal: '호랑이',
+    text: '호랑이 앞에서\n팀원 전원 점프샷',
+    diff: 'med'
+  },
+  {
+    icon: '🦍',
+    animal: '고릴라',
+    text: '고릴라처럼\n가슴 치는 포즈',
+    diff: 'med'
+  },
+  {
+    icon: '🦩',
+    animal: '홍학',
+    text: '홍학처럼\n한 발로 서기',
+    diff: 'med'
+  },
+  {
+    icon: '🐼',
+    animal: '레서판다',
+    text: '레서판다관 앞\n단체 귀여운 포즈',
+    diff: 'easy'
+  },
+  {
+    icon: '🐻',
+    animal: '곰',
+    text: '곰처럼 두 발로\n서는 포즈',
+    diff: 'med'
+  },
+  {
+    icon: '📸',
+    animal: '자유미션',
+    text: '동물원 직원께\n사진 부탁드리기',
+    diff: 'hard'
+  },
+];
+
+const diffLabel = { easy: '쉬움', med: '보통', hard: '어려움' };
+let checked = Array(9).fill(false);
+let prevBingo = 0;
+
+const LINES = [
+  [0,1,2],[3,4,5],[6,7,8],
+  [0,3,6],[1,4,7],[2,5,8],
+  [0,4,8],[2,4,6]
+];
+
+function getBingoLines() {
+  const cells = new Set();
+  LINES.forEach(line => {
+    if (line.every(i => checked[i])) line.forEach(i => cells.add(i));
+  });
+  return [...cells];
+}
+
+function countBingos() {
+  return LINES.filter(line => line.every(i => checked[i])).length;
+}
+
+function render() {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+  const lines = getBingoLines();
+
+  missions.forEach((m, i) => {
+    const isDone = checked[i];
+    const isBingo = lines.includes(i);
+    const cell = document.createElement('div');
+    cell.className = 'cell' + (isDone ? ' done' : '') + (isBingo ? ' bingo-line' : '');
+    cell.innerHTML = `
+      <div class="animal-name">${m.animal}</div>
+      <div class="icon">${m.icon}</div>
+      <div class="mission">${m.text.replace('\n','<br>')}</div>
+      <div class="diff ${m.diff}">${diffLabel[m.diff]}</div>
+    `;
+    cell.onclick = () => toggle(i);
+    grid.appendChild(cell);
+  });
+
+  const bCount = countBingos();
+  document.getElementById('bingoNum').innerHTML = `${bCount} <span>/ 8</span>`;
+
+  const btn = document.getElementById('declareBtn');
+  bCount > 0 ? btn.classList.add('visible') : btn.classList.remove('visible');
+
+  if (bCount > prevBingo && bCount > 0) showToast(`🎉 빙고!\n${bCount}줄 완성!`);
+  prevBingo = bCount;
+}
+
+function toggle(i) {
+  checked[i] = !checked[i];
+  render();
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+function declareBingo() {
+  const team = document.getElementById('teamName').value || '우리 팀';
+  const count = countBingos();
+  showToast(`🏆 ${team}\n${count}빙고 선언!`);
+}
+
+function resetAll() {
+  if (!confirm('빙고판을 초기화할까요?')) return;
+  checked = Array(9).fill(false);
+  prevBingo = 0;
+  render();
+}
+
+render();
+</script>
+</body>
+</html>
